@@ -1,4 +1,10 @@
 
+// http://fahimrahman.xyz:8001/set?switch1=off&switch2=off
+// 192.168.0.197:8001/set?switch1=off&switch2=off
+// ipOfEsp:port/set?switch1=off&switch2=off
+
+// TO setup wifi ssid and password just connect to esp hotspot and hit on 192.168.4.1 
+
 // Include the libraries that we'll be using throughout the code
 
 #include <WiFiManager.h>
@@ -12,9 +18,8 @@ Ticker ticker;
 ESP8266WebServer server(8001);
 
 
-const int ledPin = LED_BUILTIN;
-
-//const int ledPin = D1;
+const int switch1 = D5;
+const int switch2 = D7;
 
 
 #ifndef LED_BUILTIN
@@ -24,14 +29,11 @@ const int ledPin = LED_BUILTIN;
 int LED = LED_BUILTIN;
 
 
-
 void tick()
 {
   //toggle state
   digitalWrite(LED, !digitalRead(LED));     // set pin to the opposite state
 }
-
-
 
 
 //gets called when WiFiManager enters configuration mode
@@ -45,53 +47,54 @@ void configModeCallback (WiFiManager *myWiFiManager) {
 }
 
 
+void handleSetSwitch() {
 
-
-
-
-
-
-void handleSetLed() {
-
-  String ledStatus = server.arg("led");
+  String switch1Status = server.arg("switch1");
+  String switch2Status = server.arg("switch2");
 
   bool url_check = false;
 
-  if ((ledStatus == "on") || (ledStatus == "off")) {
+  if((switch1Status == "on")||(switch1Status == "off")||(switch2Status == "on")||(switch2Status == "off")) {
 
     url_check = true;
   }
 
-  if (ledStatus == "on") {
-    digitalWrite(ledPin, HIGH);
+
+
+  if (switch1Status == "on") {
+    digitalWrite(switch1, HIGH);
   }
-  else if (ledStatus == "off") {
-    digitalWrite(ledPin, LOW);
+  else if (switch1Status == "off") {
+    digitalWrite(switch1, LOW);
   }
+  if (switch2Status == "on")
+    digitalWrite(switch2, HIGH);
+  else if (switch2Status == "off")
+    digitalWrite(switch2, LOW);
+
+  
 
   if (url_check) {
 
-    if (ledStatus == "on") {
-
-      server.send(200, "text/plain", "LED ON");
+    if ((switch1Status == "on") && (switch2Status == "on")) {
+      server.send(200, "text/plain", "Switch 1 : ON\nSwitch 2 : ON");
     }
-
-    else {
-
-      server.send(200, "text/plain", "LED OFF");
+    if ((switch1Status == "off") && (switch2Status == "off")) {
+      server.send(200, "text/plain", "Switch 1 : OFF\nSwitch 2 : OFF");
+    }
+    if ((switch1Status == "on") && (switch2Status == "off")) {
+      server.send(200, "text/plain", "Switch 1 : ON\nSwitch 2 : OFF");
+    }
+    if ((switch1Status == "off") && (switch2Status == "on")) {
+      server.send(200, "text/plain", "Switch 1 : OFF\nSwitch 2 : ON");
     }
 
   }
   else {
-    server.send(200, "text/plain", "LED status unchanged!");
+    server.send(200, "text/plain", "Switch Status Unchanged!");
   }
 
 }
-
-
-
-
-
 
 
 
@@ -119,20 +122,15 @@ void handleNotFound() {
 
 
 
-
-
-
-
-
 void setup(void) {
 
 
-  // Set the LED pins to act as digital outputs and set them to a LOW
+  // Set the pins to act as digital outputs and set them to a LOW
   // state initially.
-  pinMode(ledPin, OUTPUT);
-  digitalWrite(ledPin, LOW);
-
-
+  pinMode(switch1, OUTPUT);
+  digitalWrite(switch1, LOW);
+  pinMode(switch2, OUTPUT);
+  digitalWrite(switch2, LOW);
 
 
 
@@ -166,29 +164,22 @@ void setup(void) {
   }
 
   //if you get here you have connected to the WiFi
-  Serial.println("connected...yeey :)");
+  Serial.println("Connected!");
   ticker.detach();
-  //keep LED on
+  //keep LED off
   digitalWrite(LED, HIGH);
-
 
 
 
   // Associate the URLs with the functions that will be handling the requests
 
-  server.on("/set", HTTP_GET, handleSetLed);
+  server.on("/set", HTTP_GET, handleSetSwitch);
   server.onNotFound(handleNotFound);
 
   // Start running the webserver
   server.begin();
   Serial.println("HTTP server started");
 }
-
-
-
-
-
-
 
 
 
