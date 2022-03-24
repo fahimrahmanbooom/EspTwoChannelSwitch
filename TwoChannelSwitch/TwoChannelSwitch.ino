@@ -63,14 +63,20 @@ void handleSetSwitch() {
 
   if (switch1Status == "on") {
     digitalWrite(switch1, HIGH);
+    Serial.println("Switch 1 Turned ON");
   }
   else if (switch1Status == "off") {
     digitalWrite(switch1, LOW);
+    Serial.println("Switch 1 Turned OFF");
   }
-  if (switch2Status == "on")
+  if (switch2Status == "on") {
     digitalWrite(switch2, HIGH);
-  else if (switch2Status == "off")
+    Serial.println("Switch 2 Turned ON");
+  }
+  else if (switch2Status == "off") {
     digitalWrite(switch2, LOW);
+    Serial.println("Switch 2 Turned OFF");
+  }
 
   
 
